@@ -6,8 +6,8 @@ namespace App.API.Controllers
 {
     public class UsersController(IUserService userService) : CustomBaseController
     {
-        [HttpGet("{username:string}")]
-        public async Task<IActionResult> GetById(string username) => CreateActionResult(await userService.GetByUsernameAsync(username));
+        [HttpGet("{username}")]
+        public async Task<IActionResult> GetByUsername(string username) => CreateActionResult(await userService.GetByUsernameAsync(username));
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateUserRequest request) => CreateActionResult(await userService.CreateAsync(request));
