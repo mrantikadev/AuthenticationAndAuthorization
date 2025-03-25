@@ -70,7 +70,7 @@ namespace App.Services.Products
 
             var productAsDto = new ProductDto(product.Id, product.Name, product.Price, product.Stock);
 
-            return ServiceResult<CreateProductResponse>.Success(new CreateProductResponse(productAsDto.Id), HttpStatusCode.Created);
+            return ServiceResult<CreateProductResponse>.SuccessAsCreated(new CreateProductResponse(productAsDto.Id), $"api/products/{productAsDto.Id}");
         }
 
         public async Task<ServiceResult> UpdateAsync(int id, UpdateProductRequest request)
