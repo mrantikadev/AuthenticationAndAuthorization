@@ -14,7 +14,7 @@ namespace App.API.Controllers
         [HttpGet("{pageNumber:int}/{pageSize:int}")]
         public async Task<IActionResult> GetPagedAll(int pageNumber, int pageSize) => CreateActionResult(await productService.GetPagedAllListAsync(pageNumber, pageSize));
 
-        [HttpGet("{count:int}")]
+        [HttpGet("top-price/{count:int}")]
         public async Task<IActionResult> GetTopPrice(int count) => CreateActionResult(await productService.GetTopPriceProductsAsync(count));
 
         [HttpGet("{id:int}")]
