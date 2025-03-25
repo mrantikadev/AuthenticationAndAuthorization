@@ -6,7 +6,7 @@ namespace App.Services.Users
 {
     public interface IUserService
     {
-        Task<UserDto?> GetByUsernameAsync(string username);
+        Task<ServiceResult<UserDto?>> GetByUsernameAsync(string username);
         Task<ServiceResult<CreateUserRequest>> CreateAsync(CreateUserRequest request);
     }
 }

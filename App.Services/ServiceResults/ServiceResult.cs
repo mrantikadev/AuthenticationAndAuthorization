@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace App.Services.ServiceResults
 {
-    public class ServiceResult<T> where T : class
+    public class ServiceResult<T>
     {
         public T? Data { get; set; }
         public List<string>? ErrorMessages { get; set; }
