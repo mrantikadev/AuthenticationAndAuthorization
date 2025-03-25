@@ -5,7 +5,6 @@ namespace App.Repositories
 {
     public class GenericRepository<T>(AppDbContext context) : IGenericRepository<T> where T : class
     {
-        private readonly AppDbContext _context = context;
         private readonly DbSet<T> _dbSet = context.Set<T>();
 
         public IQueryable<T> GetAll() => _dbSet.AsQueryable().AsNoTracking();
