@@ -1,6 +1,8 @@
-﻿using App.Repositories.Users;
+﻿using App.Repositories.UnitOfWorks;
+using App.Repositories.Users;
 using App.Services.Auth.Jwt;
 using App.Services.Auth.Login;
+using App.Services.Auth.RefreshToken;
 using App.Services.ServiceResults;
 using App.Services.Users.Dtos;
 using Microsoft.Extensions.Options;
@@ -13,7 +15,7 @@ using System.Text;
 
 namespace App.Services.Auth
 {
-    public class AuthService(IUserRepository userRepository, IOptions<JwtSettings> jwtOptions) : IAuthService
+    public class AuthService(IUserRepository userRepository, IUnitOfWork unitOfWork, IOptions<JwtSettings> jwtOptions) : IAuthService
     {
         private readonly JwtSettings jwtSettings = jwtOptions.Value;
 
@@ -44,9 +46,18 @@ namespace App.Services.Auth
                 return ServiceResult<LoginResponse>.Failure("Invalid credentials", HttpStatusCode.Unauthorized);
 
             var userDto = new UserDto(user.Id, user.Username, user.Role);
-            var token = GenerateToken(userDto); //will be implemented later
+            var accessToken = GenerateToken(userDto);
+            var refreshToken = GenerateRefreshToken();
 
-            return ServiceResult<LoginResponse>.Success(new LoginResponse(token, userDto));
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+            userRepository.Update(user);
+
+            await unitOfWork.SaveChangesAsync();
+
+            var response = new LoginResponse(accessToken, refreshToken, userDto);
+
+            return ServiceResult<LoginResponse>.Success(response);
         }
 
         public string GenerateToken(UserDto user)
@@ -71,6 +82,39 @@ namespace App.Services.Auth
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public string GenerateRefreshToken()
+        {
+            var randomBytes = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+
+            return Convert.ToBase64String(randomBytes);
+        }
+
+        public async Task<ServiceResult<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request)
+        {
+            var user = await userRepository.GetByRefreshTokenAsync(request.RefreshToken);
+
+            if (user is null)
+                return ServiceResult<RefreshTokenResponse>.Failure("Invalid or expired refresh token", HttpStatusCode.Unauthorized);
+
+            var userDto = new UserDto(user.Id, user.Username, user.Role);
+
+            var newAccessToken = GenerateToken(userDto);
+            var newRefreshToken = GenerateRefreshToken();
+
+            // Token Rotation
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+
+            userRepository.Update(user);
+            await unitOfWork.SaveChangesAsync();
+
+            var response = new RefreshTokenResponse(newAccessToken, newRefreshToken, userDto);
+
+            return ServiceResult<RefreshTokenResponse>.Success(response);
         }
     }
 }

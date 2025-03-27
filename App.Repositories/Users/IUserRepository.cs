@@ -5,6 +5,6 @@
         Task<User?> GetByUsernameAsync(string username);
         Task CreateAsync(User user);
         void Update(User user);
-        //Task SetUserRoleAsync(int userId, string role);
+        Task<User?> GetByRefreshTokenAsync(string refreshToken);
     }
 }

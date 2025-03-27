@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata.Ecma335;
 
 namespace App.Repositories.Users
 {
@@ -9,5 +10,11 @@ namespace App.Repositories.Users
         public async Task<User?> GetByUsernameAsync(string username) => await _dbSet.FirstOrDefaultAsync(u => u.Username == username);
         public async Task CreateAsync(User user) => await _dbSet.AddAsync(user);
         public void Update(User user) => _dbSet.Update(user);
+        public async Task<User?> GetByRefreshTokenAsync(string refreshToken)
+        {
+            return await _dbSet.FirstOrDefaultAsync(u => 
+                u.RefreshToken == refreshToken &&
+                u.RefreshTokenExpiresAt > DateTime.UtcNow);
+        }
     }
 }

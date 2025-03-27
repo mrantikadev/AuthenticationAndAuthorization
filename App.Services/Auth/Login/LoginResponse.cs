@@ -2,5 +2,5 @@
 
 namespace App.Services.Auth.Login
 {
-    public record LoginResponse(string Token, UserDto User);
+    public record LoginResponse(string Token, string RefreshToken, UserDto User);
 }
